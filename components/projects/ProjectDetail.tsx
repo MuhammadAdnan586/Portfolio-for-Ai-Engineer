@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { Project } from "@/data/projects";
+import type { Screenshot } from "@/data/screenshots";
 import { useVoiceNarrator } from "@/hooks/useVoiceNarrator";
 import Button from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
@@ -28,7 +29,7 @@ import ProjectNav from "./ProjectNav";
 
 type Props = {
   project: Project;
-  screenshots: string[];
+  screenshots: Screenshot[];
   cover: string | null;
   prev: Project;
   next: Project;

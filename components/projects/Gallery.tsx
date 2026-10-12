@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ImageOff, X } from "lucide-react";
+import type { Screenshot } from "@/data/screenshots";
 
-type Props = { images: string[]; title: string; slug: string };
+type Props = { images: Screenshot[]; title: string; slug: string };
 
 export default function Gallery({ images, title, slug }: Props) {
   const [open, setOpen] = useState<number | null>(null);
@@ -71,41 +72,61 @@ export default function Gallery({ images, title, slug }: Props) {
     );
   }
 
+  const shot = isOpen ? images[open as number] : null;
+  const shotLabel = shot ? (shot.title ?? `Screenshot ${(open as number) + 1}`) : "";
+
   return (
     <>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {images.map((src, i) => (
-          <li key={src}>
-            <button
-              type="button"
-              aria-label={`Open screenshot ${i + 1} of ${count}`}
-              onClick={(e) => {
-                trigger.current = e.currentTarget;
-                setOpen(i);
-              }}
-              className="group glass relative block aspect-video w-full overflow-hidden rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-cyan"
-            >
-              <Image
-                src={src}
-                alt={`${title} screenshot ${i + 1}`}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <span className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-            </button>
-          </li>
-        ))}
+      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {images.map((s, i) => {
+          const label = s.title ?? `Screenshot ${i + 1}`;
+          return (
+            <li key={s.src}>
+              <button
+                type="button"
+                aria-label={`Open ${label}, ${i + 1} of ${count}`}
+                onClick={(e) => {
+                  trigger.current = e.currentTarget;
+                  setOpen(i);
+                }}
+                className="group glass block h-full w-full overflow-hidden rounded-xl text-left transition-colors hover:border-accent-blue/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-cyan"
+              >
+                <span className="relative block aspect-video w-full overflow-hidden bg-black/40">
+                  <Image
+                    src={s.src}
+                    alt={`${title}: ${label}`}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <span className="absolute left-2 top-2 rounded-full bg-black/65 px-2 py-0.5 font-mono text-[10px] text-white/80">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </span>
+                <span className="block p-4">
+                  <span className="block font-display text-sm font-semibold text-white">
+                    {label}
+                  </span>
+                  {s.description && (
+                    <span className="mt-1 block text-xs leading-relaxed text-white/55">
+                      {s.description}
+                    </span>
+                  )}
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
-      {isOpen && (
+      {isOpen && shot && (
         <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-label={`${title} screenshots`}
           data-lenis-prevent
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-4 pb-28 backdrop-blur-md"
           onClick={close}
           onTouchStart={(e) => {
             touchX.current = e.touches[0].clientX;
@@ -159,15 +180,21 @@ export default function Gallery({ images, title, slug }: Props) {
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={images[open as number]}
-            alt={`${title} screenshot ${(open as number) + 1} of ${count}`}
-            className="max-h-[82vh] max-w-full rounded-xl object-contain shadow-2xl"
+            src={shot.src}
+            alt={`${title}: ${shotLabel}`}
+            className="max-h-[70vh] max-w-full rounded-xl object-contain shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
 
-          <p className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 font-mono text-xs text-white/70">
-            {(open as number) + 1} / {count}
-          </p>
+          <div className="absolute inset-x-0 bottom-4 mx-auto w-[min(92vw,40rem)] text-center">
+            <p className="font-display text-base font-semibold text-white">{shotLabel}</p>
+            {shot.description && (
+              <p className="mt-1 text-sm text-white/65">{shot.description}</p>
+            )}
+            <p className="mt-2 font-mono text-xs text-white/50">
+              {(open as number) + 1} / {count}
+            </p>
+          </div>
         </div>
       )}
     </>
