@@ -7,7 +7,7 @@ import {
   Check,
   Lightbulb,
   ListChecks,
-  RotateCcw,
+  Play,
   Square,
   Target,
   TrendingUp,
@@ -61,13 +61,21 @@ function Block({
   );
 }
 
-export default function ProjectDetail({ project, screenshots, cover, prev, next, index, total }: Props) {
+export default function ProjectDetail({
+  project,
+  screenshots,
+  cover,
+  prev,
+  next,
+  index,
+  total,
+}: Props) {
   const { started, muted, supported, speaking, activeId, narrate, stop, replay } =
     useVoiceNarrator();
   const id = `project:${project.slug}`;
   const playing = speaking && activeId === id;
 
-  // Narrate when the project page opens; cancel when leaving / muting.
+  // Narrate when the project page opens (if voice is on); cancel when leaving / muting.
   useEffect(() => {
     if (!started || muted) return;
     narrate(id, project.narration);
@@ -84,26 +92,29 @@ export default function ProjectDetail({ project, screenshots, cover, prev, next,
           <ArrowLeft size={16} aria-hidden /> All projects
         </Link>
 
-        <header className="mt-6 max-w-3xl">
-          <p className="font-mono text-xs uppercase tracking-[0.25em] text-accent-cyan">
-            {project.category} / {String(index + 1).padStart(2, "0")} of{" "}
-            {String(total).padStart(2, "0")}
-          </p>
-          <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-5xl">
-            {project.title}
-          </h1>
-          <p className="mt-3 text-lg text-white/65">{project.tagline}</p>
-        </header>
+        <div className="mt-6 grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
+          <div className="glass overflow-hidden rounded-3xl p-1.5">
+            <ProjectCover
+              slug={project.slug}
+              src={cover}
+              title={project.title}
+              priority
+              sizes="(min-width: 1024px) 600px, 100vw"
+              className="rounded-[1.4rem]"
+            />
+          </div>
 
-        <div className="glass mt-8 overflow-hidden rounded-3xl p-1.5">
-          <ProjectCover
-            slug={project.slug}
-            src={cover}
-            title={project.title}
-            priority
-            sizes="(max-width: 1152px) 100vw, 1100px"
-            className="rounded-[1.4rem]"
-          />
+          <header>
+            <p className="font-mono text-xs uppercase tracking-[0.25em] text-accent-cyan">
+              {project.category} / {String(index + 1).padStart(2, "0")} of{" "}
+              {String(total).padStart(2, "0")}
+            </p>
+            <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              {project.title}
+            </h1>
+            <p className="mt-3 text-base text-white/65 sm:text-lg">{project.tagline}</p>
+            <ProjectLinks project={project} size="md" className="mt-6" />
+          </header>
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
@@ -155,7 +166,7 @@ export default function ProjectDetail({ project, screenshots, cover, prev, next,
                   </p>
                   <Button
                     variant={playing ? "outline" : "primary"}
-                    icon={playing ? <Square size={14} /> : <RotateCcw size={16} />}
+                    icon={playing ? <Square size={14} /> : <Play size={16} />}
                     onClick={() => (playing ? stop(id) : replay(id, project.narration))}
                     className="w-full"
                   >
